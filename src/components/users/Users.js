@@ -49,6 +49,15 @@ export default {
         // 判断格式是否正确
           { pattern: /^1(3\d|4[5-9]|5[0-35-9]|6[2567]|7[0-8]|8\d|9[0-35-9])\d{8}$/, message: '手机号格式不正确', trigger: 'blur' }
         ]
+      },
+      // 是否显示编辑用户对话框
+      dialogEditUserVisible: false,
+      // 编辑用户表单对象
+      editUserForm: {
+        username: '',
+        email: '',
+        mobile: '',
+        id: 0
       }
     }
   },
@@ -58,15 +67,12 @@ export default {
   methods: {
     // 获取用户数据
     async loadUserData (pagenum = 1, query = '') {
-      const url = 'http://localhost:8888/api/private/v1/users'
+      const url = 'users'
       const config = {
         params: {
           query,
           pagenum,
           pagesize: 2
-        },
-        headers: {
-          Authorization: localStorage.getItem('token')
         }
       }
       let res = await axios.get(url, config)
@@ -97,12 +103,7 @@ export default {
     },
     // 点击确定添加用户
     addUser () {
-      axios.post('http://localhost:8888/api/private/v1/users', this.addUserForm, {
-        headers: {
-          Authorization: localStorage.getItem('token')
-        }
-      }).then(res => {
-        console.log(res)
+      axios.post('users', this.addUserForm).then(res => {
         if (res.data.meta.status === 201) {
           // 隐藏对话框
           this.dialogAddUserVisible = false
@@ -120,6 +121,95 @@ export default {
           this.addUserForm.mobile = ''
         }
       })
+    },
+    // 删除用户
+    async delUser (row) {
+      console.log(row)
+      // 获取当前行对象的id
+      const { id } = row
+      try {
+        await this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
+
+        let res = await axios.delete(`users/${id}`)
+
+        if (res.data.meta.status === 200) {
+          // 提示
+          this.$message({
+            type: 'success',
+            message: '删除用户成功!',
+            duration: 800
+          })
+          // 刷新一下
+          this.loadUserData(this.pagenum)
+        }
+      } catch (error) {
+        this.$message({
+          type: 'info',
+          message: '已取消删除',
+          duration: 800
+        })
+      }
+    },
+    // 状态修改
+    async stateChanged (row) {
+      // console.log(row)
+      const { id } = row
+      const mgState = row.mg_state
+      let res = await axios.put(`users/${id}/state/${mgState}`, null)
+      // 判断状态
+      if (res.data.meta.status === 200) {
+        this.$message({
+          message: '更改状态成功',
+          type: 'success',
+          duration: 800
+        })
+        // 刷新页面
+        this.loadUserData(this.pagenum)
+      }
+    },
+    // 显示编辑用户对话框
+    showEditUserDialog (row) {
+      // 1.显示数据
+      this.dialogEditUserVisible = true
+      console.log(row)
+
+      // 2.获取数据
+      const { username, email, mobile, id } = row
+
+      // 3.把这三个数据，赋值给editUSerForm
+      this.editUserForm.username = username
+      this.editUserForm.email = email
+      this.editUserForm.mobile = mobile
+      this.editUserForm.id = id
+    },
+    // 点击确定编辑用户
+    async editUser () {
+      // 1. 获取已知参数
+      const { id, email, mobile } = this.editUserForm
+      // 2.请求
+      let res = await axios.put(`users/${id}`, {
+        email,
+        mobile
+      })
+      // console.log(res)
+
+      // 3.判断是否成功
+      if (res.data.meta.status === 200) {
+        // 3.1隐藏对话框
+        this.dialogEditUserVisible = false
+        // 3.2提示
+        this.$message({
+          message: '编辑用户成功',
+          type: 'success',
+          duration: 800
+        })
+        // 3.3刷新一下
+        this.loadUserData()
+      }
     }
   }
 }

@@ -69,6 +69,7 @@ export default {
         localStorage.removeItem('token')
 
         this.$router.push('/login')
+        // this.$router.back()
         // 提示
         this.$message({
           type: 'success',
