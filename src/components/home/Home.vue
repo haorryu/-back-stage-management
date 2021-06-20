@@ -18,32 +18,24 @@
 <!-- ------------------------------------------------侧边栏------------------------------------------------ -->
   <el-container>
     <el-aside width="200px">
+      <!--默认高亮属性  default-active="users" -->
       <el-menu
     :router="true"
-      default-active="users"
       background-color="#545c64"
+      :default-active="handlePath()"
       text-color="#fff"
       active-text-color="#ffd04b">
-      <el-submenu index="1">
+      <el-submenu :index="item1.id+''" v-for="item1 in menusData" :key='item1.id'>
         <template slot="title">
           <i class="el-icon-location"></i>
           <!-- 用户管理 -->
-          <span>用户管理</span>
+          <span>{{ item1.authName }}</span>
         </template>
         <el-menu-item-group>
-          <el-menu-item index="users">用户列表</el-menu-item>
+          <el-menu-item :index="item2.path" v-for="item2 in item1.children" :key='item2.id'>{{ item2.authName }}</el-menu-item>
         </el-menu-item-group>
       </el-submenu>
-      <el-submenu index="2">
-        <template slot="title">
-          <i class="el-icon-location"></i>
-          <span>权限管理</span>
-        </template>
-        <el-menu-item-group>
-          <el-menu-item index="roles">角色列表</el-menu-item>
-          <el-menu-item index="rights">权限列表</el-menu-item>
-        </el-menu-item-group>
-      </el-submenu>
+
     </el-menu>
     </el-aside>
 <!-- ------------------------------------------------主体------------------------------------------------ -->
@@ -55,7 +47,16 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
+  data () {
+    return {
+      menusData: []
+    }
+  },
+  created () {
+    this.loadLeftMenusData()
+  },
   methods: {
     // 退出功能
     async logout () {
@@ -98,6 +99,16 @@ export default {
       //     duration: 800
       //   })
       // })
+    },
+    async loadLeftMenusData () {
+      let res = await axios.get('menus')
+      this.menusData = res.data.data
+    },
+    // 处理home页刷新，获取最新路径
+    handlePath () {
+      let path = this.$route.path
+      return path.slice(1)
+      // console.log(path)
     }
   }
 }

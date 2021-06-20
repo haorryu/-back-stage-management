@@ -58,11 +58,26 @@ export default {
         email: '',
         mobile: '',
         id: 0
-      }
+      },
+      // 是否显示分配角色对话框
+      dialogAssignRoleVisible: false,
+      assignRoleform: {
+        // 用户名
+        userName: 'xiaoba',
+        // 用户id
+        id: '',
+        // 角色id
+        rid: ''
+      },
+      // 角色数据
+      rolesData: {}
     }
   },
   created () {
+    // let page = this.$route.params.page
+    // this.loadUserData(page)
     this.loadUserData()
+    this.loadRolesData()
   },
   methods: {
     // 获取用户数据
@@ -95,6 +110,7 @@ export default {
     // 改变当前页数
     changeCurPage (curPage) {
       // console.log('点击了分页', curPage)
+      // this.$router.push('/users/' + curPage)
       this.loadUserData(curPage, this.searchText)
     },
     // 开始查询
@@ -115,10 +131,6 @@ export default {
           })
           // 刷新一下
           this.loadUserData()
-          this.addUserForm.username = ''
-          this.addUserForm.password = ''
-          this.addUserForm.email = ''
-          this.addUserForm.mobile = ''
         }
       })
     },
@@ -209,6 +221,46 @@ export default {
         })
         // 3.3刷新一下
         this.loadUserData()
+      }
+    },
+    // 监听对话框关闭
+    dialogClosed () {
+      // 表单重置
+      this.$refs.addUserForm.resetFields()
+    },
+    async loadRolesData () {
+      let res = await axios.get('roles')
+      // console.log(res)
+      this.rolesData = res.data.data
+    },
+    // 展示分配角色对话框
+    async showAssignRoleDialog (row) {
+      this.dialogAssignRoleVisible = true
+      const {username, id} = row
+      this.assignRoleform.userName = username
+      this.assignRoleform.id = id
+      let res = await axios.get(`users/${id}`)
+      // console.log(res)
+      this.assignRoleform.rid = res.data.data.rid === -1 ? '' : res.data.data.rid
+    },
+    // 点击确定分配角色
+    async assignRole () {
+      // 获取id和rid
+      const {rid, id} = this.assignRoleform
+      let res = await axios.put(`users/${id}/role`, {
+        rid
+      })
+      // console.log(res)
+      if (res.data.meta.status === 200) {
+        // 关闭对话框
+        this.dialogAssignRoleVisible = false
+        this.$message({
+          message: '设置角色成功',
+          type: 'success',
+          duration: 800
+        })
+        // 刷新一下
+        this.loadUserData(this.pagenum)
       }
     }
   }

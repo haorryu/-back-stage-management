@@ -56,7 +56,7 @@
         <template slot-scope="scope">
           <el-button plain size="mini" type="primary" icon="el-icon-edit" @click='showEditUserDialog(scope.row)' :disabled='scope.row.id===500'></el-button>
           <el-button plain size="mini" type="danger" icon="el-icon-delete" @click='delUser(scope.row)' :disabled="scope.row.id===500"></el-button>
-          <el-button plain size="mini" type="success" icon="el-icon-check">分配角色</el-button>
+          <el-button plain size="mini" type="success" icon="el-icon-check" @click='showAssignRoleDialog(scope.row)'>分配角色</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -71,8 +71,8 @@
     </el-pagination>
 
     <!-- 添加用户对话框 -->
-    <el-dialog title="添加用户" :visible.sync="dialogAddUserVisible">
-      <el-form :rules='rules' :model="addUserForm" label-width='80px'>
+    <el-dialog title="添加用户" :visible.sync="dialogAddUserVisible"  @closed='dialogClosed'>
+      <el-form :rules='rules' :model="addUserForm" label-width='80px' ref="addUserForm">
         <el-form-item label="用户名:" prop='username'>
           <el-input v-model="addUserForm.username"></el-input>
         </el-form-item>
@@ -108,6 +108,24 @@
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogEditUserVisible = false">取 消</el-button>
         <el-button type="primary" @click="editUser">确 定</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 分配角色对话框 -->
+    <el-dialog title="分配角色" :visible.sync="dialogAssignRoleVisible">
+      <el-form :model="assignRoleform" label-width='80px'>
+        <el-form-item label="用户名">
+          <el-tag>{{ assignRoleform.userName }}</el-tag>
+        </el-form-item>
+        <el-form-item label="角色列表">
+          <el-select v-model="assignRoleform.rid" placeholder="请选择角色">
+            <el-option v-for='item in rolesData' :key='item.id' :label="item.roleName" :value="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogAssignRoleVisible = false">取 消</el-button>
+        <el-button type="primary" @click="assignRole">确 定</el-button>
       </div>
     </el-dialog>
   </div>
