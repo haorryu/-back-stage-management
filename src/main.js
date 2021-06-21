@@ -7,7 +7,7 @@ import router from './router/router.js'
 
 // 引入 element-ui
 import ElementUI from 'element-ui'
-import 'element-ui/lib/theme-chalk/index.css'
+// import 'element-ui/lib/theme-chalk/index.css'
 // 引入公共样式
 import './assets/common.css'
 import Axios from 'axios'

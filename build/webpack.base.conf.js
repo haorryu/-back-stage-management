@@ -88,5 +88,11 @@ module.exports = {
     net: 'empty',
     tls: 'empty',
     child_process: 'empty'
+  },
+  // 配置CDM
+  externals: {
+    vue: 'Vue',
+    'vue-router': 'VueRouter',
+    'element-ui': 'ELEMENT'
   }
 }
